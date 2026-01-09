@@ -5,31 +5,31 @@
 //  Created by Laima Sleiere on 08/01/2026.
 //
 
+
 import Foundation
 
-enum CountryAPIError: Error {
-    case badURL
-    case network(Error)
-    case decoding(Error)
-    case empty
-}
+enum ServiceError: Error { case badURL, network, decode }
+
 final class CountryAPI {
-    static let shared = CountryAPI()
-    private let urlString = "https://restcountries.com/v3.1/all"
-    
-    /// Nolasa info no REST Countries
-    func fetchAllCountries() async throws -> [Country] {
-        guard let url = URL(string: urlString) else { throw CountryAPIError.badURL }
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-                throw CountryAPIError.empty
-            }
-            return try JSONDecoder().decode([Country].self, from: data)
-        } catch let err as DecodingError {
-            throw CountryAPIError.decoding(err)
-        } catch {
-            throw CountryAPIError.network(error)
-        }
+    // Sarakstam — tieši 10 lauki
+    private let listURL = URL(string:
+        "https://restcountries.com/v3.1/all?fields=name,cca2,cca3,population,translations,languages,capital,flags"
+    )
+
+    func fetchAll() async throws -> [Country] {
+        guard let url = listURL else { throw ServiceError.badURL }
+        let (data, resp) = try await URLSession.shared.data(from: url)
+        guard (resp as? HTTPURLResponse)?.statusCode == 200 else { throw ServiceError.network }
+        return try JSONDecoder().decode([Country].self, from: data)
+    }
+
+    func fetchDetails(cca3: String) async throws -> Country {
+        guard let url = URL(string:
+            "https://restcountries.com/v3.1/alpha/\(cca3)?fields=name,cca2,cca3,population,translations,languages,capital,flags,borders,latlng,capitalInfo"
+        ) else { throw ServiceError.badURL }
+        let (data, resp) = try await URLSession.shared.data(from: url)
+        guard (resp as? HTTPURLResponse)?.statusCode == 200 else { throw ServiceError.network }
+        // Endpoint atgriež masīvu ar 1 elementu
+        return try JSONDecoder().decode([Country].self, from: data).first!
     }
 }

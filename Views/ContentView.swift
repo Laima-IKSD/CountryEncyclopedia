@@ -1,73 +1,65 @@
 
+
 import SwiftUI
 
 struct ContentView: View {
     @StateObject private var store = CountryStore()
-    @State private var searchText = ""
 
     var body: some View {
         NavigationStack {
-            Group {
-                if store.isLoading {
-                    ProgressView("Ielādē valstis…")
-                } else if let err = store.errorMessage {
-                    Text(err)
-                        .foregroundStyle(.red)
-                        .padding()
-                } else {
-                    List {
-                        ForEach(filteredCountries.prefix(50), id: \.cca3) { country in
-                            HStack {
-                                Text(country.flagEmoji)
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(country.name.common)
-                                        .font(.headline)
-                                    Text(country.name.official)
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                Text(country.cca2)
-                                    .font(.caption)
-                                    .monospaced()
-                                    .foregroundStyle(.secondary)
-                            }
+            List {
+                if !store.favorites.isEmpty {
+                    Section("Favorīti") {
+                        ForEach(store.filtered.filter { store.favorites.contains($0.cca3) }) { c in
+                            CountryRow(
+                                country: c,
+                                rank: store.rankByPop[c.cca3],
+                                flagEmoji: store.emojiFlag(cca2: c.cca2),
+                                onFav: { store.toggleFavorite(c) }
+                            )
                         }
                     }
                 }
+                Section("Visas valstis") {
+                    ForEach(store.filtered) { c in
+                        CountryRow(
+                            country: c,
+                            rank: store.rankByPop[c.cca3],
+                            flagEmoji: store.emojiFlag(cca2: c.cca2),
+                            onFav: { store.toggleFavorite(c) }
+                        )
+                    }
+                }
             }
-            .navigationTitle("Countries")
-            .searchable(text: $searchText, prompt: "Search countries")
+            .navigationTitle("Country Encyclopedia")
+            .searchable(text: $store.searchText, placement: .navigationBarDrawer(displayMode: .always))
             .task { await store.load() }
         }
     }
-
-    var filteredCountries: [Country] {
-        let all = store.countries
-        let query = normalize(searchText)
-        guard !query.isEmpty else { return all }
-
-        return all.filter { country in
-            if normalize(country.name.common).contains(query) { return true }
-            if normalize(country.name.official).contains(query) { return true }
-
-            if let translations = country.translations {
-                let hit = translations.values.contains { tr in
-                    let c = normalize(tr.common ?? "")
-                    let o = normalize(tr.official ?? "")
-                    return c.contains(query) || o.contains(query)
-                }
-                if hit { return true }
-            }
-            return false
-        }
-    }
-
-
-    func normalize(_ text: String) -> String {
-        text.folding(options: .diacriticInsensitive, locale: .current)
-            .lowercased()
-    }
 }
 
-#Preview { ContentView() }
+private struct CountryRow: View {
+    let country: Country
+    let rank: Int?
+    let flagEmoji: String
+    let onFav: () -> Void
+
+    var body: some View {
+        NavigationLink(value: country) {
+            HStack {
+                // Emoji karogs sarakstam
+                Text(flagEmoji)
+                VStack(alignment: .leading) {
+                    Text(country.name.common).font(.headline)
+                    Text(country.name.official).font(.subheadline).foregroundStyle(.secondary)
+                }
+                Spacer()
+                if let r = rank { Text("#\(r)").font(.footnote).foregroundStyle(.tertiary) }
+                FavoriteToggle(isOn: false, action: onFav) // vienkārša zvaigznīte
+            }
+        }
+        .navigationDestination(for: Country.self) { c in
+            CountryDetailView(country: c)
+        }
+    }
+}

@@ -12,7 +12,7 @@ import SwiftUI
 struct CountryEncyclopediaApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()  // <-- jāatrod ContentView
+            ContentView() 
         }
     }
 }

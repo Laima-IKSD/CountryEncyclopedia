@@ -5,54 +5,33 @@
 //  Created by Laima Sleiere on 08/01/2026.
 //
 
-import Foundation
-import CoreLocation
 
-struct Country: Identifiable, Decodable {
-    var id: String { cca3 }
-    
+import Foundation
+
+struct Country: Identifiable, Decodable, Equatable, Hashable {
+    struct Name: Decodable { let common: String; let official: String }
+    struct Translation: Decodable { let common: String?; let official: String? }
+    struct Flags: Decodable { let png: String?; let svg: String?; let alt: String? }
+    struct CapitalInfo: Decodable { let latlng: [Double]? }
+
+    // Saraksta laukiem (no /v3.1/all) — ≤10 fields
     let name: Name
-    let translations: [String: Translation]?
     let cca2: String
     let cca3: String
     let population: Int
-    let latlng: [Double]?
-    let capital: [String]?
-    let capitalInfo: CapitalInfo?
-    let borders: [String]?
+    let translations: [String: Translation]?
     let languages: [String: String]?
-    
-    // koordinātes, prioritāri capitalInfo, or valsts latling
-    var coordinate: CLLocationCoordinate2D? {
-        if let coords = capitalInfo?.latlng, coords.count == 2 {
-            return CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1])
-        } else if let coords = latlng, coords.count == 2 {
-            return CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1])
-        } else {
-            return nil
-        }
-        
-    }
-    
-    //Saraksta karodziņa emocijzīme no CCA2
-    var flagEmotion: String {
-        let base: UInt32 = 127397
-        return cca2.uppercased().unicodeScalars.reduce(into: "") { result, scalar in
-            result.unicodeScalars.append(UnicodeScalar(base + scalar.value)!)
-        }
-    }
-}
+    let capital: [String]?
+    let flags: Flags
 
-struct Name: Decodable {
-    let common: String
-    let official: String
-}
-
-struct Translation: Decodable {
-    let common: String?
-    let official: String?
-}
-
-struct CapitalInfo: Decodable {
+    // Detaļām (no /v3.1/alpha/{cca3})
+    let borders: [String]?
     let latlng: [Double]?
+    let capitalInfo: CapitalInfo?
+
+    var id: String { cca3 }
+
+    // Hashable/Equatable tikai pēc ID, lai nav jāpadara hashable viss iekšējais saturs
+    static func == (lhs: Country, rhs: Country) -> Bool { lhs.cca3 == rhs.cca3 }
+    func hash(into hasher: inout Hasher) { hasher.combine(cca3) }
 }
