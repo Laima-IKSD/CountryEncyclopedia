@@ -21,4 +21,3 @@ struct FavoriteToggle: View {
         .accessibilityLabel(isOn ? "Noņemt no favorītiem" : "Pievienot favorītiem")
     }
 }
-

@@ -1,5 +1,9 @@
 
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
 import SwiftUI
 
 struct ContentView: View {
@@ -36,6 +40,7 @@ struct ContentView: View {
             .task { await store.load() }
         }
     }
+<<<<<<< HEAD
 }
 
 private struct CountryRow: View {
@@ -63,3 +68,29 @@ private struct CountryRow: View {
         }
     }
 }
+=======
+}
+
+private struct CountryRow: View {
+    let country: Country
+    let rank: Int?
+    let flagEmoji: String
+    let onFav: () -> Void
+
+    var body: some View {
+        NavigationLink(destination: CountryDetailView(country: country)) {
+            HStack {
+                Text(flagEmoji)
+                VStack(alignment: .leading) {
+                    Text(country.name.common).font(.headline)
+                    Text(country.name.official).font(.subheadline).foregroundStyle(.secondary)
+                }
+                Spacer()
+                if let r = rank { Text("#\(r)").font(.footnote).foregroundStyle(.tertiary) }
+                FavoriteToggle(isOn: false, action: onFav)
+            }
+        }
+    }
+}
+
+>>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)

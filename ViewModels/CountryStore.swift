@@ -65,6 +65,10 @@ final class CountryStore: ObservableObject {
     }
 
     func toggleFavorite(_ country: Country) {
+<<<<<<< HEAD
+=======
+        // Šī metode IR klases iekšpusē (skat. figūriekavas faila beigās)
+>>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
         if favorites.contains(country.cca3) {
             favorites.remove(country.cca3)
         } else {
@@ -77,7 +81,11 @@ final class CountryStore: ObservableObject {
         }
     }
 
+<<<<<<< HEAD
     // Emoji karogs sarakstam (CCA2 -> reģionu indikatoru simboli)
+=======
+    // 🇱🇻 Emoji karogs sarakstam (CCA2 -> reģionu indikatoru simboli)
+>>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
     func emojiFlag(cca2: String) -> String {
         let base: UInt32 = 0x1F1E6
         return String(cca2.uppercased().unicodeScalars.map {

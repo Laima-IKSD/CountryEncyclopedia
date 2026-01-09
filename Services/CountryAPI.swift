@@ -30,6 +30,10 @@ final class CountryAPI {
         let (data, resp) = try await URLSession.shared.data(from: url)
         guard (resp as? HTTPURLResponse)?.statusCode == 200 else { throw ServiceError.network }
         // Endpoint atgriež masīvu ar 1 elementu
+<<<<<<< HEAD
         return try JSONDecoder().decode([Country].self, from: data).first!
+=======
+        return try JSONDecoder().decode(Country.self, from: data)
+>>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
     }
 }
