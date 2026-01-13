@@ -15,14 +15,6 @@ struct LanguageCountriesView: View {
 
     var body: some View {
         List {
-<<<<<<< HEAD
-            ForEach(store.all.filter {
-                $0.languages?.values.contains(where: {
-                    $0.range(of: languageName, options: [.caseInsensitive, .diacriticInsensitive]) != nil
-                }) == true
-            }) { c in
-                Text(c.name.common)
-=======
             ForEach(filtered) { c in
                 NavigationLink(destination: CountryDetailView(country: c)) {
                     VStack(alignment: .leading) {
@@ -30,14 +22,11 @@ struct LanguageCountriesView: View {
                         Text(c.name.official).font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
             }
         }
         .task { await store.load() }
         .navigationTitle(languageName)
     }
-<<<<<<< HEAD
-=======
 
     private var filtered: [Country] {
         store.all.filter {
@@ -48,5 +37,4 @@ struct LanguageCountriesView: View {
         }
         .sorted { $0.name.common.localizedCompare($1.name.common) == .orderedAscending }
     }
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
 }

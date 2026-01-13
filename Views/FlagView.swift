@@ -5,10 +5,6 @@
 //  Created by Laima Sleiere on 09/01/2026.
 //
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
 import SwiftUI
 
 struct FlagView: View {
@@ -36,7 +32,3 @@ struct FlagView: View {
         })
     }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)

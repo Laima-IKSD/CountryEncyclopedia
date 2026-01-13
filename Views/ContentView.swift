@@ -1,9 +1,4 @@
 
-<<<<<<< HEAD
-
-=======
- 
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
 import SwiftUI
 
 struct ContentView: View {
@@ -19,6 +14,7 @@ struct ContentView: View {
                                 country: c,
                                 rank: store.rankByPop[c.cca3],
                                 flagEmoji: store.emojiFlag(cca2: c.cca2),
+                                isFavorite: store.favorites.contains(c.cca3),
                                 onFav: { store.toggleFavorite(c) }
                             )
                         }
@@ -30,6 +26,7 @@ struct ContentView: View {
                             country: c,
                             rank: store.rankByPop[c.cca3],
                             flagEmoji: store.emojiFlag(cca2: c.cca2),
+                            isFavorite: store.favorites.contains(c.cca3),
                             onFav: { store.toggleFavorite(c) }
                         )
                     }
@@ -40,41 +37,13 @@ struct ContentView: View {
             .task { await store.load() }
         }
     }
-<<<<<<< HEAD
 }
 
 private struct CountryRow: View {
     let country: Country
     let rank: Int?
     let flagEmoji: String
-    let onFav: () -> Void
-
-    var body: some View {
-        NavigationLink(value: country) {
-            HStack {
-                // Emoji karogs sarakstam
-                Text(flagEmoji)
-                VStack(alignment: .leading) {
-                    Text(country.name.common).font(.headline)
-                    Text(country.name.official).font(.subheadline).foregroundStyle(.secondary)
-                }
-                Spacer()
-                if let r = rank { Text("#\(r)").font(.footnote).foregroundStyle(.tertiary) }
-                FavoriteToggle(isOn: false, action: onFav) // vienkārša zvaigznīte
-            }
-        }
-        .navigationDestination(for: Country.self) { c in
-            CountryDetailView(country: c)
-        }
-    }
-}
-=======
-}
-
-private struct CountryRow: View {
-    let country: Country
-    let rank: Int?
-    let flagEmoji: String
+    let isFavorite: Bool
     let onFav: () -> Void
 
     var body: some View {
@@ -86,11 +55,15 @@ private struct CountryRow: View {
                     Text(country.name.official).font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer()
-                if let r = rank { Text("#\(r)").font(.footnote).foregroundStyle(.tertiary) }
-                FavoriteToggle(isOn: false, action: onFav)
+                if let r = rank {
+                    Text("#\(r)").font(.footnote).foregroundStyle(.tertiary)
+                }
+                Button(action: onFav) {
+                    Image(systemName: isFavorite ? "star.fill" : "star")
+                        .foregroundColor(isFavorite ? .yellow : .gray)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
 }
-
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)

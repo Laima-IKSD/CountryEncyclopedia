@@ -5,35 +5,35 @@
 //  Created by Laima Sleiere on 09/01/2026.
 //
 
+
 import SwiftUI
 import MapKit
 
 struct CountryDetailView: View {
     let country: Country
     @State private var detail: Country?
+    @State private var neighbors: [Country] = []
     @State private var camera: MapCameraPosition = .automatic
     private let api = CountryAPI()
+
+    // Režģis “smukām rindām” (pielāgo kolonnas atkarībā no platuma)
+    private let grid = [GridItem(.adaptive(minimum: 140), spacing: 8)]
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+
+                // Karogs no FlagsAPI
                 FlagView(cca2: country.cca2)
 
-<<<<<<< HEAD
-                // PNG karogs no FlagsAPI — LV/flat/160.png
-                FlagView(cca2: country.cca2)
-
-                Text(country.name.common).font(.largeTitle).bold()
-                Text("Oficiālais: \(country.name.official)").foregroundStyle(.secondary)
+                Text(country.name.common)
+                    .font(.largeTitle)
+                    .bold()
+                Text("Oficiālais: \(country.name.official)")
+                    .foregroundStyle(.secondary)
                 Text("Kods: \(country.cca2)/\(country.cca3) · Populācija: \(country.population)")
 
-=======
-                Text(country.name.common).font(.largeTitle).bold()
-                Text("Oficiālais: \(country.name.official)").foregroundStyle(.secondary)
-                Text("Kods: \(country.cca2)/\(country.cca3) · Populācija: \(country.population)")
-
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
-                // Valodas + saites uz citām valstīm ar šo valodu
+                // Valodas + saite uz citām valstīm ar šo valodu
                 if let langs = country.languages, !langs.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Valodas").font(.headline)
@@ -49,33 +49,45 @@ struct CountryDetailView: View {
                     }
                 }
 
-                // Karte (centrē uz capital.latlng, citādi country.latlng)
-<<<<<<< HEAD
-                Map(position: $camera)
-                    .frame(height: 240)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-
-=======
-                
+                // KARTE: galvenais marķieris + kaimiņu marķieri
                 Map(position: $camera) {
                     if let coords = detail?.capitalInfo?.latlng ?? detail?.latlng ?? country.latlng,
-                        coords.count == 2 {
+                       coords.count == 2 {
                         Marker(country.capital?.first ?? country.name.common,
-                                coordinate: CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1]))
+                               coordinate: CLLocationCoordinate2D(latitude: coords[0], longitude: coords[1]))
+                        .tint(.red)
+                    }
+
+                    ForEach(neighbors.sorted { $0.name.common < $1.name.common }, id: \.cca3) { n in
+                        if let c = n.capitalInfo?.latlng ?? n.latlng, c.count == 2 {
+                            Marker(n.name.common,
+                                   coordinate: CLLocationCoordinate2D(latitude: c[0], longitude: c[1]))
+                            .tint(.blue)
                         }
                     }
-                    .frame(height: 240)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .frame(height: 260)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
-                // Kaimiņvalstis (cca3 kodi)
-                if let borders = detail?.borders, !borders.isEmpty {
+                // KAIMIŅVALSTIS: pilnie nosaukumi "čipos" (skaisti rindās)
+                if !neighbors.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Kaimiņvalstis").font(.headline)
-                        ForEach(borders, id: \.self) { code in
-                            NavigationLink(code) { NeighborDetailView(cca3: code) }
-                                .buttonStyle(.borderedProminent)
+                        LazyVGrid(columns: grid, alignment: .leading, spacing: 8) {
+                            ForEach(neighbors.sorted { $0.name.common < $1.name.common }, id: \.cca3) { n in
+                                NavigationLink {
+                                    CountryDetailView(country: n)
+                                } label: {
+                                    Text(n.name.common)
+                                        .lineLimit(1)
+                                        .truncationMode(.tail)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(.thinMaterial)
+                                        .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
                 }
@@ -84,67 +96,33 @@ struct CountryDetailView: View {
         }
         .task {
             do {
+                // 1) Galvenās valsts detaļas
                 let det = try await api.fetchDetails(cca3: country.cca3)
                 detail = det
-<<<<<<< HEAD
-=======
-                
-                //Debug
-                print("Capital coords:", det.capitalInfo?.latlng ?? [])
-                print("Country coords:", det.latlng ?? [])
-                print("Border:", det.borders ?? [])
-                
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
-                let coord = det.capitalInfo?.latlng ?? det.latlng ?? country.latlng
-                if let c = coord, c.count == 2 {
+
+                // Karte – prioritāte capital -> country; pretējā gadījumā pasaules skats
+                let coords = det.capitalInfo?.latlng ?? det.latlng ?? country.latlng
+                if let c = coords, c.count == 2 {
                     camera = .camera(MapCamera(
                         centerCoordinate: CLLocationCoordinate2D(latitude: c[0], longitude: c[1]),
                         distance: 600_000
                     ))
-<<<<<<< HEAD
-                }
-            } catch {
-                // TODO: paziņojums lietotājam
-=======
                 } else {
                     camera = .automatic
                 }
+
+                // 2) Kaimiņi (pilnie nosaukumi + koordinātes kartē)
+                if let borderCodes = det.borders, !borderCodes.isEmpty {
+                    neighbors = try await api.fetchNeighbors(cca3Codes: borderCodes)
+                } else {
+                    neighbors = []
+                }
+
             } catch {
                 print("Neizdevās ielādēt detaļas:", error)
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
             }
         }
         .navigationTitle(country.name.common)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
-<<<<<<< HEAD
-// Kaimiņa “mini” skats — parāda nosaukumu
-=======
-// Kaimiņa “mini” skats — parāda nosaukumu (vajadzības gadījumā var paplašināt)
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
-private struct NeighborDetailView: View {
-    let cca3: String
-    @State private var detail: Country?
-    private let api = CountryAPI()
-
-    var body: some View {
-        Group {
-            if let d = detail {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(d.name.common).font(.title).bold()
-                    Text(d.name.official).foregroundStyle(.secondary)
-                }
-                .padding()
-            } else {
-                ProgressView()
-            }
-        }
-        .task { detail = try? await api.fetchDetails(cca3: cca3) }
-    }
-}
-<<<<<<< HEAD
-
-=======
->>>>>>> 022980f (Salabota karte - lai rādītu pareizas lokācijas punktusy)
