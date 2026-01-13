@@ -19,7 +19,7 @@ struct Country: Identifiable, Decodable, Equatable, Hashable {
     let name: Name
     let cca2: String
     let cca3: String
-    let population: Int?
+    let population: Int
     let translations: [String: Translation]?
     let languages: [String: String]?
     let capital: [String]?

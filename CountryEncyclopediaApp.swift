@@ -10,9 +10,12 @@ import SwiftUI
 
 @main
 struct CountryEncyclopediaApp: App {
+    @StateObject private var store = CountryStore()
     var body: some Scene {
         WindowGroup {
-            ContentView() 
+            ContentView()
+                .environmentObject(store)
+                .tint(.indigo)
         }
     }
 }
