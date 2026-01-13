@@ -36,16 +36,16 @@ final class CountryAPI {
     }
 
     /// Atgriež kaimiņvalstis vienā izsaukumā: /alpha?codes=LTU,EST&fields=...
+    
     func fetchNeighbors(cca3Codes: [String]) async throws -> [Country] {
         guard !cca3Codes.isEmpty else { return [] }
-
         let joined = cca3Codes.joined(separator: ",")
         guard let url = URL(string:
             "https://restcountries.com/v3.1/alpha?codes=\(joined)&fields=name,cca2,cca3,latlng,capital,capitalInfo"
         ) else { throw ServiceError.badURL }
-
         let (data, resp) = try await URLSession.shared.data(from: url)
         guard (resp as? HTTPURLResponse)?.statusCode == 200 else { throw ServiceError.network }
         return try JSONDecoder().decode([Country].self, from: data)
     }
+
 }

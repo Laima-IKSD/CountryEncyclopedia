@@ -73,7 +73,7 @@ struct CountryDetailView: View {
                 if !neighbors.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Kaimiņvalstis").font(.headline)
-                        LazyVGrid(columns: grid, alignment: .leading, spacing: 8) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 8)]) {
                             ForEach(neighbors.sorted { $0.name.common < $1.name.common }, id: \.cca3) { n in
                                 NavigationLink {
                                     CountryDetailView(country: n)
@@ -114,6 +114,7 @@ struct CountryDetailView: View {
                 // 2) Kaimiņi (pilnie nosaukumi + koordinātes kartē)
                 if let borderCodes = det.borders, !borderCodes.isEmpty {
                     neighbors = try await api.fetchNeighbors(cca3Codes: borderCodes)
+                    print("Ielādē kaimiņvalstis:", neighbors.map { $0.name.common })
                 } else {
                     neighbors = []
                 }
