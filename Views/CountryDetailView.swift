@@ -10,26 +10,27 @@ import SwiftUI
 import MapKit
 
 struct CountryDetailView: View {
+    @EnvironmentObject private var store: CountryStore
     let country: Country
+    
+    
     @State private var detail: Country?
     @State private var neighbors: [Country] = []
     @State private var camera: MapCameraPosition = .automatic
     private let api = CountryAPI()
 
-    // Režģis “smukām rindām” (pielāgo kolonnas atkarībā no platuma)
-    private let grid = [GridItem(.adaptive(minimum: 140), spacing: 8)]
 
     var body: some View {
         ScrollView {
             
             VStack(alignment: .leading, spacing: 6) {
                 Text(country.name.common)
-                    .font(.largeTitle.bold())
-                Text("Oficiālais: \(country.name.official)")
+                    .font(.title3.bold())
+                Text("Oficiālais nosaukums: \(country.name.official)")
                     .foregroundStyle(.secondary)
-                Text("Kods: \(country.cca2)/\(country.cca3) · Populācija: \(country.population.formatted())")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text("Valsts kods: \(country.cca2)/\(country.cca3) · Populācija: \(NumberFormatter.localizedString(from: NSNumber(value: country.population), number: .decimal))")
+                    .font(.title3.bold())
+                    .foregroundStyle(.black)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -37,6 +38,11 @@ struct CountryDetailView: View {
                 AsyncImage(url: URL(string: "https://flagsapi.com/\(country.cca2)/flat/160.png")) { img in
                     img.resizable().scaledToFit()
                 } placeholder: {
+                    Image(systemName: "flag.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundColor(.gray)
+                        .frame(width: 64, height: 64)
                     ProgressView()
                 }
                 .frame(height: 120)
@@ -45,22 +51,33 @@ struct CountryDetailView: View {
 
                 Text(country.name.common)
                     .font(.largeTitle.bold())
-                    .padding(.top)
+                    .padding(.top, 4)
 
                 Divider()
+            
 
                 // Valodas
                 if let langs = country.languages {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Valodas")
                             .font(.title3.bold())
-                        ForEach(langs.sorted(by: { $0.key < $1.key }), id: \.key) { _, name in
-                            Label(name, systemImage: "globe")
+                        ForEach(langs.keys.sorted(), id: \.self) { key in
+                            let name = langs[key] ?? key
+                            NavigationLink {
+                                LanguageCountriesView(languageName: name) .environmentObject(store)
+
+                            } label: {
+                                Label(name, systemImage: "globe")
+                                    .font(.caption)
+                                    .padding(.horizontal, 10)
+                                    .background(Color(uiColor: .secondarySystemBackground), in: Capsule())
+                            }
                         }
                     }
                     .padding()
                     .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(radius: 4)
                 }
 
                 // Karte
@@ -114,13 +131,7 @@ struct CountryDetailView: View {
             .padding()
         
         .background(
-            LinearGradient(colors: [.indigo.opacity(0.2), .blue.opacity(0.1)],
-                           startPoint: .top, endPoint: .bottom)
-            .ignoresSafeArea()
-        )
-
-        .background(
-            LinearGradient(colors: [.indigo.opacity(0.2), .blue.opacity(0.1)],
+            LinearGradient(colors: [.black.opacity(0.15), .blue.opacity(0.05)],
                            startPoint: .top, endPoint: .bottom)
             .ignoresSafeArea()
         )

@@ -31,7 +31,7 @@ struct Country: Identifiable, Decodable, Equatable, Hashable {
     var countryLatLng: [Double]? = nil
     var id: String { cca3 }
 
-    // Hashable/Equatable tikai pēc ID, lai nav jāpadara hashable viss iekšējais saturs
+    // Hashable/Equatable tikai pēc ID
     static func == (lhs: Country, rhs: Country) -> Bool { lhs.cca3 == rhs.cca3 }
     func hash(into hasher: inout Hasher) { hasher.combine(cca3) }
     
@@ -44,7 +44,7 @@ struct Country: Identifiable, Decodable, Equatable, Hashable {
     var flagEmoji: String {
         String(cca2.uppercased().unicodeScalars.map {
             UnicodeScalar(127397 + Int($0.value))!
-        }.map { Character($0) })
+        }.map { String($0) }.joined())
         
     }
     
@@ -59,4 +59,18 @@ struct Country: Identifiable, Decodable, Equatable, Hashable {
         return nil
 
     }
+    
+    /// Formatēta valodu rinda (piem., "Latvian, Russian")
+     var languagesList: String {
+         guard let langs = languages, !langs.isEmpty else { return "—" }
+         return langs.values.sorted().joined(separator: ", ")
+     }
+
+     /// FlagsAPI URL detaļu skatam (bitmap PNG)
+     /// https://flagsapi.com/:cca2/:style/:size.png
+     var flagsAPIURL: URL? {
+         URL(string: "https://flagsapi.com/\(cca2)/flat/128.png")
+     }
+ 
+
 }
